@@ -4,7 +4,7 @@ export type AST_TYPE = AST['type']
 
 export type AST = TAny | TArray | TBoolean | TEnum | TInterface | TNamedInterface
   | TIntersection | TLiteral | TNumber | TNull | TObject | TReference
-  | TString | TTuple | TUnion | TCustomType
+  | TString | TTuple | TUnion | TCustomType | TBSONObjectID
 
 export interface AbstractAST {
   comment?: string
@@ -130,4 +130,10 @@ export const T_ANY: TAny = {
 export const T_ANY_ADDITIONAL_PROPERTIES: TAny & ASTWithName = {
   keyName: '[k: string]',
   type: 'ANY'
+}
+
+////////////////////////////////////////////      BSON types:
+
+export interface TBSONObjectID extends AbstractAST {
+  type: 'BSON_OBJECTID'
 }

@@ -47,6 +47,10 @@ export interface Options {
    */
   unreachableDefinitions: boolean
   /**
+   * Parse BSON Types for MongoDB validation schema compatibility.
+   */
+  supportBsonTypes: boolean
+  /**
    * [$RefParser](https://github.com/BigstickCarpet/json-schema-ref-parser) Options, used when resolving `$ref`s
    */
   $refOptions: $RefOptions
@@ -73,7 +77,8 @@ export const DEFAULT_OPTIONS: Options = {
     trailingComma: 'none',
     useTabs: false
   },
-  unreachableDefinitions: false
+  unreachableDefinitions: false,
+  supportBsonTypes: false
 }
 
 export function compileFromFile(filename: string, options: Partial<Options> = DEFAULT_OPTIONS): Promise<string> {
