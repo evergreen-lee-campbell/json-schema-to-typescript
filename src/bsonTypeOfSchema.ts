@@ -1,12 +1,11 @@
-import { JSONSchema } from "./types/JSONSchema";
-import { SCHEMA_TYPE } from "../dist/src/types/JSONSchema";
-import { typeOfSchema } from "../dist/src/typeOfSchema";
+import { JSONSchema, SCHEMA_TYPE } from "./types/JSONSchema";
+import { typeOfSchema } from "./typeOfSchema";
 import { JSONSchema4TypeName } from "json-schema";
 
 // a map to convert BSON Types to JSON Types as per:
 // https://docs.mongodb.com/manual/reference/operator/query/type/#document-type-available-types
 // where MongoDB $types are missing from the map, they have no appropriate JSON Schema type, and 
-// will be handled by the default type-mapping.
+// will be handled by the default type-mapping. 
 const bsonTypeToJsonType: Map<string, JSONSchema4TypeName> = new Map<string, JSONSchema4TypeName>();
 bsonTypeToJsonType.set("double", "number");
 bsonTypeToJsonType.set("binData", "string");  // need to consider `contentEncoding` and `contentMediaType`

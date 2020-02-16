@@ -192,7 +192,11 @@ function generateRawType(ast: AST, options: Options): string {
     case 'INTERSECTION':
       return generateSetOperation(ast, options)
     case 'LITERAL':
-      return JSON.stringify(ast.params)
+      try {
+        return JSON.stringify(ast.params)
+      } catch (ex) {
+        return 'null';
+      }
     case 'NUMBER':
       return 'number'
     case 'NULL':
@@ -285,6 +289,8 @@ function generateRawType(ast: AST, options: Options): string {
       return generateSetOperation(ast, options)
     case 'CUSTOM_TYPE':
       return ast.params
+    default:
+      return 'ANY';
   }
 }
 
@@ -340,6 +346,7 @@ function generateStandaloneEnum(ast: TEnum, options: Options): string {
 
 function generateStandaloneInterface(ast: TNamedInterface, options: Options): string {
   return (
+    (options.supportBsonTypes ? `import { ObjectID } from 'mongodb\n\n` : '') +
     (hasComment(ast) ? generateComment(ast.comment) + '\n' : '') +
     `export interface ${toSafeString(ast.standaloneName)} ` +
     (ast.superTypes.length > 0
