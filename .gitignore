@@ -2,8 +2,8 @@
 .idea/
 npm-debug.log
 node_modules
-*.js
-*.map
-dist/
+#*.js
+#*.map
+#dist/
 dist_tests/
 yarn-error.log
