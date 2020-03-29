@@ -17,7 +17,12 @@ export function typeOfSchema(schema: JSONSchema): SCHEMA_TYPE {
   if (schema.$ref) return 'REFERENCE'
   switch (schema.type) {
     case 'string':
-      return 'STRING'
+      switch (schema.format) {
+        case 'date-time':
+          return 'DATE';
+        default:
+          return 'STRING';
+      }
     case 'number':
       return 'NUMBER'
     case 'integer':

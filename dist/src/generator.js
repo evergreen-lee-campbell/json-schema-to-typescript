@@ -167,6 +167,8 @@ function generateRawType(ast, options) {
             })();
         case 'BOOLEAN':
             return 'boolean';
+        case 'DATE':
+            return 'Date';
         case 'INTERFACE':
             return generateInterface(ast, options);
         case 'INTERSECTION':

@@ -96,6 +96,13 @@ function parseNonLiteral(schema, options, rootSchema, keyName, keyNameFromDefini
                 standaloneName: standaloneName(schema, keyNameFromDefinition, usedNames),
                 type: 'CUSTOM_TYPE'
             });
+        case 'DATE':
+            return set({
+                comment: schema.description,
+                keyName: keyName,
+                standaloneName: standaloneName(schema, keyNameFromDefinition, usedNames),
+                type: 'DATE'
+            });
         case 'NAMED_ENUM':
             return set({
                 comment: schema.description,

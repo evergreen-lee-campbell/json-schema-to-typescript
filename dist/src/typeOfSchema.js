@@ -27,7 +27,12 @@ function typeOfSchema(schema) {
         return 'REFERENCE';
     switch (schema.type) {
         case 'string':
-            return 'STRING';
+            switch (schema.format) {
+                case 'date-time':
+                    return 'DATE';
+                default:
+                    return 'STRING';
+            }
         case 'number':
             return 'NUMBER';
         case 'integer':

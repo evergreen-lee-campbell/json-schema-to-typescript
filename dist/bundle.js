@@ -38101,6 +38101,8 @@ function generateRawType(ast, options) {
             })();
         case 'BOOLEAN':
             return 'boolean';
+        case 'DATE':
+            return 'Date';
         case 'INTERFACE':
             return generateInterface(ast, options);
         case 'INTERSECTION':
@@ -38642,6 +38644,13 @@ function parseNonLiteral(schema, options, rootSchema, keyName, keyNameFromDefini
                 standaloneName: standaloneName(schema, keyNameFromDefinition, usedNames),
                 type: 'CUSTOM_TYPE'
             });
+        case 'DATE':
+            return set({
+                comment: schema.description,
+                keyName: keyName,
+                standaloneName: standaloneName(schema, keyNameFromDefinition, usedNames),
+                type: 'DATE'
+            });
         case 'NAMED_ENUM':
             return set({
                 comment: schema.description,
@@ -38997,7 +39006,12 @@ function typeOfSchema(schema) {
         return 'REFERENCE';
     switch (schema.type) {
         case 'string':
-            return 'STRING';
+            switch (schema.format) {
+                case 'date-time':
+                    return 'DATE';
+                default:
+                    return 'STRING';
+            }
         case 'number':
             return 'NUMBER';
         case 'integer':

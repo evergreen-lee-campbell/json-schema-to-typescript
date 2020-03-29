@@ -4,7 +4,7 @@ export type AST_TYPE = AST['type']
 
 export type AST = TAny | TArray | TBoolean | TEnum | TInterface | TNamedInterface
   | TIntersection | TLiteral | TNumber | TNull | TObject | TReference
-  | TString | TTuple | TUnion | TCustomType | TBSONObjectID
+  | TString | TTuple | TUnion | TCustomType | TBSONObjectID | TDate
 
 export interface AbstractAST {
   comment?: string
@@ -101,6 +101,10 @@ export interface TReference extends AbstractAST {
 
 export interface TString extends AbstractAST {
   type: 'STRING'
+}
+
+export interface TDate extends AbstractAST {
+  type: 'DATE'
 }
 
 export interface TTuple extends AbstractAST {

@@ -1,6 +1,6 @@
 import { JSONSchema4Type } from 'json-schema';
 export declare type AST_TYPE = AST['type'];
-export declare type AST = TAny | TArray | TBoolean | TEnum | TInterface | TNamedInterface | TIntersection | TLiteral | TNumber | TNull | TObject | TReference | TString | TTuple | TUnion | TCustomType | TBSONObjectID;
+export declare type AST = TAny | TArray | TBoolean | TEnum | TInterface | TNamedInterface | TIntersection | TLiteral | TNumber | TNull | TObject | TReference | TString | TTuple | TUnion | TCustomType | TBSONObjectID | TDate;
 export interface AbstractAST {
     comment?: string;
     keyName?: string;
@@ -78,6 +78,9 @@ export interface TReference extends AbstractAST {
 }
 export interface TString extends AbstractAST {
     type: 'STRING';
+}
+export interface TDate extends AbstractAST {
+    type: 'DATE';
 }
 export interface TTuple extends AbstractAST {
     type: 'TUPLE';
