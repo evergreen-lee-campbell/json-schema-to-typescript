@@ -47,7 +47,8 @@ main(minimist(process.argv.slice(2), {
     alias: {
         help: ['h'],
         input: ['i'],
-        output: ['o']
+        output: ['o'],
+        supportBsonTypes: ['b']
     }
 }));
 function main(argv) {

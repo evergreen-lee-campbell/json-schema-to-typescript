@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.dereference = void 0;
 var cli_color_1 = require("cli-color");
 var $RefParser = require("json-schema-ref-parser");
 var utils_1 = require("./utils");

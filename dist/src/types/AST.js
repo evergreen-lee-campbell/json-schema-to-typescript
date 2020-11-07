@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.T_ANY_ADDITIONAL_PROPERTIES = exports.T_ANY = exports.hasStandaloneName = exports.hasComment = void 0;
 function hasComment(ast) {
     return 'comment' in ast && ast.comment != null && ast.comment !== '';
 }

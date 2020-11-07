@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.normalize = void 0;
 var cli_color_1 = require("cli-color");
 var stringify = require("json-stringify-safe");
 var lodash_1 = require("lodash");

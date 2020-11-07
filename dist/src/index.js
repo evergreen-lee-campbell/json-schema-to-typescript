@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -60,6 +60,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ValidationError = exports.compile = exports.compileFromFile = exports.DEFAULT_OPTIONS = void 0;
 var fs_1 = require("fs");
 var lodash_1 = require("lodash");
 var path_1 = require("path");
@@ -123,8 +124,7 @@ function compile(schema, name, options) {
                     _c = optimizer_1.optimize;
                     _d = parser_1.parse;
                     return [4 /*yield*/, resolver_1.dereference(normalizer_1.normalize(schema, name), _options)];
-                case 1: return [2 /*return*/, _a.apply(void 0, [_b.apply(void 0, [_c.apply(void 0, [_d.apply(void 0, [_e.sent(), _options])]), _options]),
-                        _options])];
+                case 1: return [2 /*return*/, _a.apply(void 0, [_b.apply(void 0, [_c.apply(void 0, [_d.apply(void 0, [_e.sent(), _options])]), _options]), _options])];
             }
         });
     });

@@ -11,6 +11,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.parse = void 0;
 var cli_color_1 = require("cli-color");
 var lodash_1 = require("lodash");
 var util_1 = require("util");

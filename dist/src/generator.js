@@ -7,6 +7,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.generate = void 0;
 var cli_color_1 = require("cli-color");
 var lodash_1 = require("lodash");
 var index_1 = require("./index");

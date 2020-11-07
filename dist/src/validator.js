@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.validate = void 0;
 var utils_1 = require("./utils");
 var rules = new Map();
 rules.set('Enum members and tsEnumNames must be of the same length', function (schema) {

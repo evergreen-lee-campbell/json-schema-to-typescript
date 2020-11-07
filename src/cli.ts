@@ -13,7 +13,8 @@ main(
     alias: {
       help: ['h'],
       input: ['i'],
-      output: ['o']
+      output: ['o'],
+      supportBsonTypes: ['b']
     }
   })
 )

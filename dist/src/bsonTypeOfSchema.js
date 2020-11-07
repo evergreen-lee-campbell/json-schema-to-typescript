@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.bsonTypeOfSchema = void 0;
 var typeOfSchema_1 = require("./typeOfSchema");
 // a map to convert BSON Types to JSON Types as per:
 // https://docs.mongodb.com/manual/reference/operator/query/type/#document-type-available-types

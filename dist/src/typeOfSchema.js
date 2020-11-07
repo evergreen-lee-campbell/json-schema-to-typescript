@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.typeOfSchema = void 0;
 var lodash_1 = require("lodash");
 /**
  * Duck types a JSONSchema schema or property to determine which kind of AST node to parse it into.
