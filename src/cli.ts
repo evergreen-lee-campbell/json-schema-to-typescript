@@ -1,22 +1,26 @@
 #!/usr/bin/env node
 
+import {whiteBright} from 'cli-color'
 import minimist = require('minimist')
 import {readFile, writeFile, existsSync, lstatSync, readdirSync} from 'mz/fs'
 import * as mkdirp from 'mkdirp'
-import glob from 'glob-promise'
+import * as _glob from 'glob'
 import isGlob = require('is-glob')
+import {promisify} from 'util'
 import {join, resolve, dirname, basename} from 'path'
 import stdin = require('stdin')
 import {compile, Options} from './index'
-import {pathTransform, error} from './utils'
+import {pathTransform} from './utils'
+
+// Promisify glob
+const glob = promisify(_glob)
 
 main(
   minimist(process.argv.slice(2), {
     alias: {
       help: ['h'],
       input: ['i'],
-      output: ['o'],
-      supportBsonTypes: ['b']
+      output: ['o']
     }
   })
 )
@@ -50,7 +54,7 @@ async function main(argv: minimist.ParsedArgs) {
       outputResult(result, argOut)
     }
   } catch (e) {
-    error(e)
+    console.error(whiteBright.bgRedBright('error'), e)
     process.exit(1)
   }
 }
@@ -158,8 +162,6 @@ Boolean values can be set to false using the 'no-' prefix.
       Declare external schemas referenced via '$ref'?
   --enableConstEnums
       Prepend enums with 'const'?
-  --format
-      Format code? Set this to false to improve performance.
   --style.XXX=YYY
       Prettier configuration
   --unknownAny

@@ -12,7 +12,6 @@ var __assign = (this && this.__assign) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = void 0;
-var cli_color_1 = require("cli-color");
 var lodash_1 = require("lodash");
 var util_1 = require("util");
 var typeOfSchema_1 = require("./typeOfSchema");
@@ -50,7 +49,7 @@ function parseLiteral(schema, keyName, keyNameFromDefinition, set) {
     });
 }
 function parseNonLiteral(schema, options, rootSchema, keyName, keyNameFromDefinition, set, processed, usedNames) {
-    utils_1.log(cli_color_1.whiteBright.bgBlue('parser'), schema, '<-' + typeOfSchema_1.typeOfSchema(schema), processed.has(schema) ? '(FROM CACHE)' : '');
+    utils_1.log('blue', 'parser', schema, '<-' + typeOfSchema_1.typeOfSchema(schema), processed.has(schema) ? '(FROM CACHE)' : '');
     var typeOfCurrentSchema;
     if (options.supportBsonTypes && schema.bsonType) {
         typeOfCurrentSchema = bsonTypeOfSchema_1.bsonTypeOfSchema(schema);

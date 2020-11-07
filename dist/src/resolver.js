@@ -37,7 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dereference = void 0;
-var cli_color_1 = require("cli-color");
 var $RefParser = require("json-schema-ref-parser");
 var utils_1 = require("./utils");
 function dereference(schema, _a) {
@@ -45,7 +44,7 @@ function dereference(schema, _a) {
     return __awaiter(this, void 0, void 0, function () {
         var parser;
         return __generator(this, function (_b) {
-            utils_1.log(cli_color_1.whiteBright.bgGreen('resolver'), schema, cwd);
+            utils_1.log('green', 'resolver', schema, cwd);
             parser = new $RefParser();
             return [2 /*return*/, parser.dereference(cwd, schema, $refOptions)];
         });

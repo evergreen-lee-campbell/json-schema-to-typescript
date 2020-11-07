@@ -40,52 +40,196 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var cli_color_1 = require("cli-color");
 var minimist = require("minimist");
 var fs_1 = require("mz/fs");
+var mkdirp = require("mkdirp");
+var _glob = require("glob");
+var isGlob = require("is-glob");
+var util_1 = require("util");
 var path_1 = require("path");
 var stdin = require("stdin");
 var index_1 = require("./index");
+var utils_1 = require("./utils");
+// Promisify glob
+var glob = util_1.promisify(_glob);
 main(minimist(process.argv.slice(2), {
     alias: {
         help: ['h'],
         input: ['i'],
-        output: ['o'],
-        supportBsonTypes: ['b']
+        output: ['o']
     }
 }));
 function main(argv) {
     return __awaiter(this, void 0, void 0, function () {
-        var argIn, argOut, schema, _a, _b, ts, e_1;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var argIn, argOut, ISGLOB, ISDIR, result, e_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     if (argv.help) {
                         printHelp();
                         process.exit(0);
                     }
                     argIn = argv._[0] || argv.input;
-                    argOut = argv._[1] || argv.output;
-                    _c.label = 1;
+                    argOut = argv._[1] || argv.output // the output can be omitted so this can be undefined
+                    ;
+                    ISGLOB = isGlob(argIn);
+                    ISDIR = isDir(argIn);
+                    if ((ISGLOB || ISDIR) && argOut && argOut.includes('.d.ts')) {
+                        throw new ReferenceError("You have specified a single file " + argOut + " output for a multi file input " + argIn + ". This feature is not yet supported, refer to issue #272 (https://github.com/bcherny/json-schema-to-typescript/issues/272)");
+                    }
+                    _a.label = 1;
                 case 1:
-                    _c.trys.push([1, 5, , 6]);
-                    _b = (_a = JSON).parse;
-                    return [4 /*yield*/, readInput(argIn)];
+                    _a.trys.push([1, 8, , 9]);
+                    if (!ISGLOB) return [3 /*break*/, 3];
+                    return [4 /*yield*/, processGlob(argIn, argOut, argv)];
                 case 2:
-                    schema = _b.apply(_a, [_c.sent()]);
-                    return [4 /*yield*/, index_1.compile(schema, argIn, argv)];
+                    _a.sent();
+                    return [3 /*break*/, 7];
                 case 3:
-                    ts = _c.sent();
-                    return [4 /*yield*/, writeOutput(ts, argOut)];
+                    if (!ISDIR) return [3 /*break*/, 5];
+                    return [4 /*yield*/, processDir(argIn, argOut, argv)];
                 case 4:
-                    _c.sent();
-                    return [3 /*break*/, 6];
-                case 5:
-                    e_1 = _c.sent();
+                    _a.sent();
+                    return [3 /*break*/, 7];
+                case 5: return [4 /*yield*/, processFile(argIn, argv)];
+                case 6:
+                    result = _a.sent();
+                    outputResult(result, argOut);
+                    _a.label = 7;
+                case 7: return [3 /*break*/, 9];
+                case 8:
+                    e_1 = _a.sent();
                     console.error(cli_color_1.whiteBright.bgRedBright('error'), e_1);
                     process.exit(1);
-                    return [3 /*break*/, 6];
-                case 6: return [2 /*return*/];
+                    return [3 /*break*/, 9];
+                case 9: return [2 /*return*/];
             }
         });
     });
+}
+// check if path is an existing directory
+function isDir(path) {
+    return fs_1.existsSync(path) && fs_1.lstatSync(path).isDirectory();
+}
+function processGlob(argIn, argOut, argv) {
+    return __awaiter(this, void 0, void 0, function () {
+        var files, results;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, glob(argIn)]; // execute glob pattern match
+                case 1:
+                    files = _a.sent() // execute glob pattern match
+                    ;
+                    if (files.length === 0) {
+                        throw ReferenceError("You passed a glob pattern \"" + argIn + "\", but there are no files that match that pattern in " + process.cwd());
+                    }
+                    return [4 /*yield*/, Promise.all(files.map(function (file) { return __awaiter(_this, void 0, void 0, function () {
+                            var _a;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        _a = [file];
+                                        return [4 /*yield*/, processFile(file, argv)];
+                                    case 1: return [2 /*return*/, _a.concat([_b.sent()])];
+                                }
+                            });
+                        }); }))
+                        // careful to do this serially
+                    ];
+                case 2:
+                    results = _a.sent();
+                    // careful to do this serially
+                    results.forEach(function (_a) {
+                        var file = _a[0], result = _a[1];
+                        var outputPath = argOut && argOut + "/" + path_1.basename(file, '.json') + ".d.ts";
+                        outputResult(result, outputPath);
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function processDir(argIn, argOut, argv) {
+    return __awaiter(this, void 0, void 0, function () {
+        var files, results;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    files = getPaths(argIn);
+                    return [4 /*yield*/, Promise.all(files.map(function (file) { return __awaiter(_this, void 0, void 0, function () {
+                            var _a, outputPath, _b;
+                            return __generator(this, function (_c) {
+                                switch (_c.label) {
+                                    case 0:
+                                        if (!!argOut) return [3 /*break*/, 2];
+                                        _a = [file];
+                                        return [4 /*yield*/, processFile(file, argv)];
+                                    case 1: return [2 /*return*/, _a.concat([_c.sent()])];
+                                    case 2:
+                                        outputPath = utils_1.pathTransform(argOut, argIn, file);
+                                        _b = [file];
+                                        return [4 /*yield*/, processFile(file, argv)];
+                                    case 3: return [2 /*return*/, _b.concat([_c.sent(), outputPath])];
+                                }
+                            });
+                        }); }))
+                        // careful to do this serially
+                    ];
+                case 1:
+                    results = _a.sent();
+                    // careful to do this serially
+                    results.forEach(function (_a) {
+                        var file = _a[0], result = _a[1], outputPath = _a[2];
+                        return outputResult(result, outputPath ? outputPath + "/" + path_1.basename(file, '.json') + ".d.ts" : undefined);
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function outputResult(result, outputPath) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!!outputPath) return [3 /*break*/, 1];
+                    process.stdout.write(result);
+                    return [3 /*break*/, 3];
+                case 1:
+                    if (!isDir(path_1.dirname(outputPath))) {
+                        mkdirp.sync(path_1.dirname(outputPath));
+                    }
+                    return [4 /*yield*/, fs_1.writeFile(outputPath, result)];
+                case 2: return [2 /*return*/, _a.sent()];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
+function processFile(argIn, argv) {
+    return __awaiter(this, void 0, void 0, function () {
+        var schema, _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _b = (_a = JSON).parse;
+                    return [4 /*yield*/, readInput(argIn)];
+                case 1:
+                    schema = _b.apply(_a, [_c.sent()]);
+                    return [2 /*return*/, index_1.compile(schema, argIn, argv)];
+            }
+        });
+    });
+}
+function getPaths(path, paths) {
+    if (paths === void 0) { paths = []; }
+    if (fs_1.existsSync(path) && fs_1.lstatSync(path).isDirectory()) {
+        fs_1.readdirSync(path_1.resolve(path)).forEach(function (item) { return getPaths(path_1.join(path, item), paths); });
+    }
+    else {
+        paths.push(path);
+    }
+    return paths;
 }
 function readInput(argIn) {
     if (!argIn) {
@@ -93,20 +237,8 @@ function readInput(argIn) {
     }
     return fs_1.readFile(path_1.resolve(process.cwd(), argIn), 'utf-8');
 }
-function writeOutput(ts, argOut) {
-    if (!argOut) {
-        try {
-            process.stdout.write(ts);
-            return Promise.resolve();
-        }
-        catch (err) {
-            return Promise.reject(err);
-        }
-    }
-    return fs_1.writeFile(argOut, ts);
-}
 function printHelp() {
     var pkg = require('../../package.json');
-    process.stdout.write("\n" + pkg.name + " " + pkg.version + "\nUsage: json2ts [--input, -i] [IN_FILE] [--output, -o] [OUT_FILE] [OPTIONS]\n\nWith no IN_FILE, or when IN_FILE is -, read standard input.\nWith no OUT_FILE and when IN_FILE is specified, create .d.ts file in the same directory.\nWith no OUT_FILE nor IN_FILE, write to standard output.\n\nYou can use any of the following options by adding them at the end.\nBoolean values can be set to false using the 'no-' prefix.\n\n  --cwd=XXX\n      Root directory for resolving $ref\n  --declareExternallyReferenced\n      Declare external schemas referenced via '$ref'?\n  --enableConstEnums\n      Prepend enums with 'const'?\n  --style.XXX=YYY\n      Prettier configuration\n  --unreachableDefinitions\n      Generates code for definitions that aren't referenced by the schema\n");
+    process.stdout.write("\n" + pkg.name + " " + pkg.version + "\nUsage: json2ts [--input, -i] [IN_FILE] [--output, -o] [OUT_FILE] [OPTIONS]\n\nWith no IN_FILE, or when IN_FILE is -, read standard input.\nWith no OUT_FILE and when IN_FILE is specified, create .d.ts file in the same directory.\nWith no OUT_FILE nor IN_FILE, write to standard output.\n\nYou can use any of the following options by adding them at the end.\nBoolean values can be set to false using the 'no-' prefix.\n\n  --cwd=XXX\n      Root directory for resolving $ref\n  --declareExternallyReferenced\n      Declare external schemas referenced via '$ref'?\n  --enableConstEnums\n      Prepend enums with 'const'?\n  --style.XXX=YYY\n      Prettier configuration\n  --unknownAny\n      Output unknown type instead of any type\n  --unreachableDefinitions\n      Generates code for definitions that aren't referenced by the schema\n");
 }
 //# sourceMappingURL=cli.js.map

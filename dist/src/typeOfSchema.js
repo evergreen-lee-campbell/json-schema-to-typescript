@@ -18,8 +18,6 @@ function typeOfSchema(schema) {
         return 'UNION';
     if (schema.type === 'null')
         return 'NULL';
-    if (schema.items)
-        return 'TYPED_ARRAY';
     if (schema.enum && schema.tsEnumNames)
         return 'NAMED_ENUM';
     if (schema.enum)
@@ -41,15 +39,19 @@ function typeOfSchema(schema) {
         case 'boolean':
             return 'BOOLEAN';
         case 'object':
-            if (!schema.properties && !lodash_1.isPlainObject(schema)) {
-                return 'OBJECT';
+            if (!lodash_1.isPlainObject(schema.additionalProperties) && !schema.patternProperties && !schema.properties) {
+                return 'UNNAMED_SCHEMA';
             }
             break;
         case 'array':
+            if (schema.items)
+                return 'TYPED_ARRAY';
             return 'UNTYPED_ARRAY';
         case 'any':
             return 'ANY';
     }
+    if (schema.items)
+        return 'TYPED_ARRAY';
     switch (typeof schema.default) {
         case 'boolean':
             return 'BOOLEAN';

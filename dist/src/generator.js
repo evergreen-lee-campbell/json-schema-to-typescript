@@ -8,7 +8,6 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generate = void 0;
-var cli_color_1 = require("cli-color");
 var lodash_1 = require("lodash");
 var index_1 = require("./index");
 var AST_1 = require("./types/AST");
@@ -154,13 +153,13 @@ function generateType(ast, options) {
     return type;
 }
 function generateRawType(ast, options) {
-    utils_1.log(cli_color_1.whiteBright.bgMagenta('generator'), ast);
+    utils_1.log('magenta', 'generator', ast);
     if (AST_1.hasStandaloneName(ast)) {
         return utils_1.toSafeString(ast.standaloneName);
     }
     switch (ast.type) {
         case 'ANY':
-            return 'any';
+            return options.unknownAny ? 'unknown' : 'any';
         case 'ARRAY':
             return (function () {
                 var type = generateType(ast.params, options);

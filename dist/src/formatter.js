@@ -14,6 +14,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.format = void 0;
 var prettier_1 = require("prettier");
 function format(code, options) {
+    if (!options.format) {
+        return code;
+    }
     return prettier_1.format(code, __assign({ parser: 'typescript' }, options.style));
 }
 exports.format = format;

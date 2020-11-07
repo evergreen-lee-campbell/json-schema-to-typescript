@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.normalize = void 0;
-var cli_color_1 = require("cli-color");
-var stringify = require("json-stringify-safe");
 var lodash_1 = require("lodash");
 var utils_1 = require("./utils");
 var rules = new Map();
@@ -29,7 +27,7 @@ rules.set('Destructure unary types', function (schema) {
     }
 });
 rules.set('Add empty `required` property if none is defined', function (schema) {
-    if (!('required' in schema) && isObjectType(schema)) {
+    if (isObjectType(schema) && !('required' in schema)) {
         schema.required = [];
     }
 });
@@ -40,19 +38,32 @@ rules.set('Transform `required`=false to `required`=[]', function (schema) {
 });
 // TODO: default to empty schema (as per spec) instead
 rules.set('Default additionalProperties to true', function (schema) {
-    if (!('additionalProperties' in schema) && isObjectType(schema) && schema.patternProperties === undefined) {
+    if (isObjectType(schema) && !('additionalProperties' in schema) && schema.patternProperties === undefined) {
         schema.additionalProperties = true;
     }
 });
-rules.set('Default top level `id`', function (schema, rootSchema, fileName) {
-    if (!schema.id && stringify(schema) === stringify(rootSchema)) {
+rules.set('Default top level `id`', function (schema, _rootSchema, fileName, _options, isRoot) {
+    if (isRoot && !schema.id) {
         schema.id = utils_1.toSafeString(utils_1.justName(fileName));
     }
 });
 rules.set('Escape closing JSDoc Comment', function (schema) {
     utils_1.escapeBlockComment(schema);
 });
-rules.set('Normalise schema.minItems', function (schema) {
+rules.set('Optionally remove maxItems and minItems', function (schema, _rootSchema, _fileName, options) {
+    if (options.ignoreMinAndMaxItems) {
+        if ('maxItems' in schema) {
+            delete schema.maxItems;
+        }
+        if ('minItems' in schema) {
+            delete schema.minItems;
+        }
+    }
+});
+rules.set('Normalise schema.minItems', function (schema, _rootSchema, _fileName, options) {
+    if (options.ignoreMinAndMaxItems) {
+        return;
+    }
     // make sure we only add the props onto array types
     if (isArrayType(schema)) {
         var minItems = schema.minItems;
@@ -60,7 +71,10 @@ rules.set('Normalise schema.minItems', function (schema) {
     }
     // cannot normalise maxItems because maxItems = 0 has an actual meaning
 });
-rules.set('Normalize schema.items', function (schema) {
+rules.set('Normalize schema.items', function (schema, _rootSchema, _fileName, options) {
+    if (options.ignoreMinAndMaxItems) {
+        return;
+    }
     var maxItems = schema.maxItems, minItems = schema.minItems;
     var hasMaxItems = typeof maxItems === 'number' && maxItems >= 0;
     var hasMinItems = typeof minItems === 'number' && minItems > 0;
@@ -81,11 +95,11 @@ rules.set('Normalize schema.items', function (schema) {
     }
     return schema;
 });
-function normalize(schema, filename) {
+function normalize(schema, filename, options) {
     var _schema = lodash_1.cloneDeep(schema);
     rules.forEach(function (rule, key) {
-        utils_1.traverse(_schema, function (schema) { return rule(schema, _schema, filename); });
-        utils_1.log(cli_color_1.whiteBright.bgYellow('normalizer'), "Applied rule: \"" + key + "\"");
+        utils_1.traverse(_schema, function (schema, isRoot) { return rule(schema, _schema, filename, options, isRoot); }, true);
+        utils_1.log('yellow', 'normalizer', "Applied rule: \"" + key + "\"");
     });
     return _schema;
 }

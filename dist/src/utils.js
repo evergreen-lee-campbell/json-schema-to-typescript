@@ -7,8 +7,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.escapeBlockComment = exports.log = exports.error = exports.generateName = exports.toSafeString = exports.stripExtension = exports.justName = exports.traverse = exports.mapDeep = exports.dft = exports.Try = void 0;
-var cli_color_1 = require("cli-color");
+exports.pathTransform = exports.escapeBlockComment = exports.log = exports.error = exports.generateName = exports.toSafeString = exports.stripExtension = exports.justName = exports.traverse = exports.mapDeep = exports.Try = void 0;
 var lodash_1 = require("lodash");
 var path_1 = require("path");
 // TODO: pull out into a separate package
@@ -21,19 +20,6 @@ function Try(fn, err) {
     }
 }
 exports.Try = Try;
-/**
- * Depth-first traversal
- */
-function dft(object, cb) {
-    for (var key in object) {
-        if (!object.hasOwnProperty(key))
-            continue;
-        if (lodash_1.isPlainObject(object[key]))
-            dft(object[key], cb);
-        cb(object[key], key);
-    }
-}
-exports.dft = dft;
 function mapDeep(object, fn, key) {
     return fn(lodash_1.mapValues(object, function (_, key) {
         if (lodash_1.isPlainObject(_)) {
@@ -89,15 +75,15 @@ var BLACKLISTED_KEYS = new Set([
 function traverseObjectKeys(obj, callback) {
     Object.keys(obj).forEach(function (k) {
         if (obj[k] && typeof obj[k] === 'object' && !Array.isArray(obj[k])) {
-            traverse(obj[k], callback);
+            traverse(obj[k], callback, false);
         }
     });
 }
 function traverseArray(arr, callback) {
-    arr.forEach(function (i) { return traverse(i, callback); });
+    arr.forEach(function (i) { return traverse(i, callback, false); });
 }
-function traverse(schema, callback) {
-    callback(schema);
+function traverse(schema, callback, isRoot) {
+    callback(schema, isRoot);
     if (schema.anyOf) {
         traverseArray(schema.anyOf, callback);
     }
@@ -114,7 +100,7 @@ function traverse(schema, callback) {
         traverseObjectKeys(schema.patternProperties, callback);
     }
     if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-        traverse(schema.additionalProperties, callback);
+        traverse(schema.additionalProperties, callback, false);
     }
     if (schema.items) {
         var items = schema.items;
@@ -122,11 +108,11 @@ function traverse(schema, callback) {
             traverseArray(items, callback);
         }
         else {
-            traverse(items, callback);
+            traverse(items, callback, false);
         }
     }
     if (schema.additionalItems && typeof schema.additionalItems === 'object') {
-        traverse(schema.additionalItems, callback);
+        traverse(schema.additionalItems, callback, false);
     }
     if (schema.dependencies) {
         traverseObjectKeys(schema.dependencies, callback);
@@ -135,7 +121,7 @@ function traverse(schema, callback) {
         traverseObjectKeys(schema.definitions, callback);
     }
     if (schema.not) {
-        traverse(schema.not, callback);
+        traverse(schema.not, callback, false);
     }
     // technically you can put definitions on any key
     Object.keys(schema)
@@ -190,36 +176,66 @@ function toSafeString(string) {
 exports.toSafeString = toSafeString;
 function generateName(from, usedNames) {
     var name = toSafeString(from);
+    if (!name) {
+        name = 'NoName';
+    }
     // increment counter until we find a free name
     if (usedNames.has(name)) {
         var counter = 1;
-        while (usedNames.has(name)) {
-            name = "" + toSafeString(from) + counter;
+        var nameWithCounter = "" + name + counter;
+        while (usedNames.has(nameWithCounter)) {
+            nameWithCounter = "" + name + counter;
             counter++;
         }
+        name = nameWithCounter;
     }
     usedNames.add(name);
     return name;
 }
 exports.generateName = generateName;
 function error() {
+    var _a;
     var messages = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         messages[_i] = arguments[_i];
     }
-    console.error.apply(console, __spreadArrays([cli_color_1.whiteBright.bgRedBright('error')], messages));
+    if (!process.env.VERBOSE) {
+        return console.error(messages);
+    }
+    console.error.apply(console, __spreadArrays([(_a = getStyledTextForLogging('red')) === null || _a === void 0 ? void 0 : _a('error')], messages));
 }
 exports.error = error;
-function log() {
+function log(style, title) {
+    var _a;
     var messages = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        messages[_i] = arguments[_i];
+    for (var _i = 2; _i < arguments.length; _i++) {
+        messages[_i - 2] = arguments[_i];
     }
-    if (process.env.VERBOSE) {
-        console.info.apply(console, __spreadArrays([cli_color_1.whiteBright.bgCyan('debug')], messages));
+    if (!process.env.VERBOSE) {
+        return;
     }
+    console.info.apply(console, __spreadArrays([require('cli-color').whiteBright.bgCyan('debug'), (_a = getStyledTextForLogging(style)) === null || _a === void 0 ? void 0 : _a(title)], messages));
 }
 exports.log = log;
+function getStyledTextForLogging(style) {
+    if (!process.env.VERBOSE) {
+        return;
+    }
+    switch (style) {
+        case 'blue':
+            return require('cli-color').whiteBright.bgBlue;
+        case 'cyan':
+            return require('cli-color').whiteBright.bgCyan;
+        case 'green':
+            return require('cli-color').whiteBright.bgGreen;
+        case 'magenta':
+            return require('cli-color').whiteBright.bgMagenta;
+        case 'red':
+            return require('cli-color').whiteBright.bgRedBright;
+        case 'yellow':
+            return require('cli-color').whiteBright.bgYellow;
+    }
+}
 /**
  * escape block comments in schema descriptions so that they don't unexpectedly close JSDoc comments in generated typescript interfaces
  */
@@ -236,4 +252,22 @@ function escapeBlockComment(schema) {
     }
 }
 exports.escapeBlockComment = escapeBlockComment;
+/*
+the following logic determines the out path by comparing the in path to the users specified out path.
+For example, if input directory MultiSchema looks like:
+  MultiSchema/foo/a.json
+  MultiSchema/bar/fuzz/c.json
+  MultiSchema/bar/d.json
+And the user wants the outputs to be in MultiSchema/Out, then this code will be able to map the inner directories foo, bar, and fuzz into the intended Out directory like so:
+  MultiSchema/Out/foo/a.json
+  MultiSchema/Out/bar/fuzz/c.json
+  MultiSchema/Out/bar/d.json
+*/
+function pathTransform(outputPath, inputPath, filePath) {
+    var inPathList = path_1.normalize(inputPath).split(path_1.sep);
+    var filePathList = path_1.dirname(path_1.normalize(filePath)).split(path_1.sep);
+    var filePathRel = filePathList.filter(function (f, i) { return f !== inPathList[i]; });
+    return path_1.join.apply(void 0, __spreadArrays([path_1.normalize(outputPath)], filePathRel));
+}
+exports.pathTransform = pathTransform;
 //# sourceMappingURL=utils.js.map

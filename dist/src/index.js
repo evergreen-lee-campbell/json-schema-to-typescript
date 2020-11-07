@@ -78,6 +78,8 @@ exports.DEFAULT_OPTIONS = {
     cwd: process.cwd(),
     declareExternallyReferenced: true,
     enableConstEnums: true,
+    format: true,
+    ignoreMinAndMaxItems: false,
     strictIndexSignatures: false,
     style: {
         bracketSpacing: false,
@@ -89,7 +91,8 @@ exports.DEFAULT_OPTIONS = {
         useTabs: false
     },
     unreachableDefinitions: false,
-    supportBsonTypes: false
+    supportBsonTypes: false,
+    unknownAny: true
 };
 function compileFromFile(filename, options) {
     if (options === void 0) { options = exports.DEFAULT_OPTIONS; }
@@ -123,7 +126,7 @@ function compile(schema, name, options) {
                     _b = generator_1.generate;
                     _c = optimizer_1.optimize;
                     _d = parser_1.parse;
-                    return [4 /*yield*/, resolver_1.dereference(normalizer_1.normalize(schema, name), _options)];
+                    return [4 /*yield*/, resolver_1.dereference(normalizer_1.normalize(schema, name, _options), _options)];
                 case 1: return [2 /*return*/, _a.apply(void 0, [_b.apply(void 0, [_c.apply(void 0, [_d.apply(void 0, [_e.sent(), _options])]), _options]), _options])];
             }
         });
