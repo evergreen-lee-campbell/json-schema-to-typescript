@@ -347,7 +347,7 @@ function generateStandaloneEnum(ast: TEnum, options: Options): string {
 
 function generateStandaloneInterface(ast: TNamedInterface, options: Options): string {
   return (
-    (options.supportBsonTypes ? `import { ObjectID } from 'mongodb\n\n` : '') +
+    (options.supportBsonTypes ? `import { ObjectID } from 'mongodb';\n\n` : '') +
     (hasComment(ast) ? generateComment(ast.comment) + '\n' : '') +
     `export interface ${toSafeString(ast.standaloneName)} ` +
     (ast.superTypes.length > 0
