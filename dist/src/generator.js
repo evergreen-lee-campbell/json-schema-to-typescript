@@ -311,7 +311,7 @@ function generateStandaloneEnum(ast, options) {
         '}');
 }
 function generateStandaloneInterface(ast, options) {
-    return ((options.supportBsonTypes ? "import { ObjectID } from 'mongodb\n\n" : '') +
+    return ((options.supportBsonTypes ? "import { ObjectID } from 'mongodb';\n\n" : '') +
         (AST_1.hasComment(ast) ? generateComment(ast.comment) + '\n' : '') +
         ("export interface " + utils_1.toSafeString(ast.standaloneName) + " ") +
         (ast.superTypes.length > 0
