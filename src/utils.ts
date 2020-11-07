@@ -1,6 +1,5 @@
-import {whiteBright} from 'cli-color'
 import {deburr, isPlainObject, mapValues, trim, upperFirst} from 'lodash'
-import {basename, extname} from 'path'
+import {basename, dirname, extname, join, normalize, sep} from 'path'
 import {JSONSchema} from './types/JSONSchema'
 
 // TODO: pull out into a separate package
@@ -9,17 +8,6 @@ export function Try<T>(fn: () => T, err: (e: Error) => any): T {
     return fn()
   } catch (e) {
     return err(e as Error)
-  }
-}
-
-/**
- * Depth-first traversal
- */
-export function dft<T, U>(object: {[k: string]: any}, cb: (value: U, key: string) => T): void {
-  for (const key in object) {
-    if (!object.hasOwnProperty(key)) continue
-    if (isPlainObject(object[key])) dft(object[key], cb)
-    cb(object[key], key)
   }
 }
 
@@ -77,18 +65,22 @@ const BLACKLISTED_KEYS = new Set([
   'oneOf',
   'not'
 ])
-function traverseObjectKeys(obj: Record<string, JSONSchema>, callback: (schema: JSONSchema) => void) {
+function traverseObjectKeys(obj: Record<string, JSONSchema>, callback: (schema: JSONSchema, isRoot: boolean) => void) {
   Object.keys(obj).forEach(k => {
     if (obj[k] && typeof obj[k] === 'object' && !Array.isArray(obj[k])) {
-      traverse(obj[k], callback)
+      traverse(obj[k], callback, false)
     }
   })
 }
-function traverseArray(arr: JSONSchema[], callback: (schema: JSONSchema) => void) {
-  arr.forEach(i => traverse(i, callback))
+function traverseArray(arr: JSONSchema[], callback: (schema: JSONSchema, isRoot: boolean) => void) {
+  arr.forEach(i => traverse(i, callback, false))
 }
-export function traverse(schema: JSONSchema, callback: (schema: JSONSchema) => void): void {
-  callback(schema)
+export function traverse(
+  schema: JSONSchema,
+  callback: (schema: JSONSchema, isRoot: boolean) => void,
+  isRoot: boolean
+): void {
+  callback(schema, isRoot)
 
   if (schema.anyOf) {
     traverseArray(schema.anyOf, callback)
@@ -106,18 +98,18 @@ export function traverse(schema: JSONSchema, callback: (schema: JSONSchema) => v
     traverseObjectKeys(schema.patternProperties, callback)
   }
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    traverse(schema.additionalProperties, callback)
+    traverse(schema.additionalProperties, callback, false)
   }
   if (schema.items) {
     const {items} = schema
     if (Array.isArray(items)) {
       traverseArray(items, callback)
     } else {
-      traverse(items, callback)
+      traverse(items, callback, false)
     }
   }
   if (schema.additionalItems && typeof schema.additionalItems === 'object') {
-    traverse(schema.additionalItems, callback)
+    traverse(schema.additionalItems, callback, false)
   }
   if (schema.dependencies) {
     traverseObjectKeys(schema.dependencies, callback)
@@ -126,7 +118,7 @@ export function traverse(schema: JSONSchema, callback: (schema: JSONSchema) => v
     traverseObjectKeys(schema.definitions, callback)
   }
   if (schema.not) {
-    traverse(schema.not, callback)
+    traverse(schema.not, callback, false)
   }
 
   // technically you can put definitions on any key
@@ -183,27 +175,58 @@ export function toSafeString(string: string): string {
 
 export function generateName(from: string, usedNames: Set<string>) {
   let name = toSafeString(from)
+  if (!name) {
+    name = 'NoName'
+  }
 
   // increment counter until we find a free name
   if (usedNames.has(name)) {
     let counter = 1
-    while (usedNames.has(name)) {
-      name = `${toSafeString(from)}${counter}`
+    let nameWithCounter = `${name}${counter}`
+    while (usedNames.has(nameWithCounter)) {
+      nameWithCounter = `${name}${counter}`
       counter++
     }
+    name = nameWithCounter
   }
 
   usedNames.add(name)
   return name
 }
 
-export function error(...messages: any[]) {
-  console.error(whiteBright.bgRedBright('error'), ...messages)
+export function error(...messages: any[]): void {
+  if (!process.env.VERBOSE) {
+    return console.error(messages)
+  }
+  console.error(getStyledTextForLogging('red')?.('error'), ...messages)
 }
 
-export function log(...messages: any[]) {
-  if (process.env.VERBOSE) {
-    console.info(whiteBright.bgCyan('debug'), ...messages)
+type LogStyle = 'blue' | 'cyan' | 'green' | 'magenta' | 'red' | 'yellow'
+
+export function log(style: LogStyle, title: string, ...messages: unknown[]): void {
+  if (!process.env.VERBOSE) {
+    return
+  }
+  console.info(require('cli-color').whiteBright.bgCyan('debug'), getStyledTextForLogging(style)?.(title), ...messages)
+}
+
+function getStyledTextForLogging(style: LogStyle): ((text: string) => string) | undefined {
+  if (!process.env.VERBOSE) {
+    return
+  }
+  switch (style) {
+    case 'blue':
+      return require('cli-color').whiteBright.bgBlue
+    case 'cyan':
+      return require('cli-color').whiteBright.bgCyan
+    case 'green':
+      return require('cli-color').whiteBright.bgGreen
+    case 'magenta':
+      return require('cli-color').whiteBright.bgMagenta
+    case 'red':
+      return require('cli-color').whiteBright.bgRedBright
+    case 'yellow':
+      return require('cli-color').whiteBright.bgYellow
   }
 }
 
@@ -220,4 +243,23 @@ export function escapeBlockComment(schema: JSONSchema) {
       schema[key] = schema[key]!.replace(/\*\//g, replacer)
     }
   }
+}
+
+/*
+the following logic determines the out path by comparing the in path to the users specified out path.
+For example, if input directory MultiSchema looks like:
+  MultiSchema/foo/a.json
+  MultiSchema/bar/fuzz/c.json
+  MultiSchema/bar/d.json
+And the user wants the outputs to be in MultiSchema/Out, then this code will be able to map the inner directories foo, bar, and fuzz into the intended Out directory like so:
+  MultiSchema/Out/foo/a.json
+  MultiSchema/Out/bar/fuzz/c.json
+  MultiSchema/Out/bar/d.json
+*/
+export function pathTransform(outputPath: string, inputPath: string, filePath: string): string {
+  const inPathList = normalize(inputPath).split(sep)
+  const filePathList = dirname(normalize(filePath)).split(sep)
+  const filePathRel = filePathList.filter((f, i) => f !== inPathList[i])
+
+  return join(normalize(outputPath), ...filePathRel)
 }

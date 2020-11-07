@@ -25,6 +25,7 @@ export function hasOnly() {
 export function run() {
   // [filename, absolute dirname, contents][]
   const modules = readdirSync(dir)
+    .filter(_ => !_.includes('.ignore.'))
     .filter(_ => /^.*\.js$/.test(_))
     .map(_ => [_, require(join(dir, _))]) as [string, TestCase][]
 
@@ -39,7 +40,7 @@ export function run() {
 }
 
 function runOne(exports: TestCase, name: string) {
-  log(`Running test: "${name}"`)
+  log('blue', 'Running test', name)
   test(name, async t => {
     if (exports.error) {
       try {
