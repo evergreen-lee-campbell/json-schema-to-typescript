@@ -1,49 +1,49 @@
 export declare const input: {
-    "title": string;
-    "type": string;
-    "properties": {
-        "stringEnum": {
-            "type": string;
-            "enum": string[];
+    title: string;
+    type: string;
+    properties: {
+        stringEnum: {
+            type: string;
+            enum: string[];
         };
-        "impliedStringEnum": {
-            "enum": string[];
+        impliedStringEnum: {
+            enum: string[];
         };
-        "booleanEnum": {
-            'type': string;
-            "enum": boolean[];
+        booleanEnum: {
+            type: string;
+            enum: boolean[];
         };
         impliedBooleanEnum: {
-            "enum": boolean[];
+            enum: boolean[];
         };
         integerEnum: {
-            "type": string;
-            "enum": number[];
+            type: string;
+            enum: number[];
         };
         impliedIntegerEnum: {
-            "enum": number[];
+            enum: number[];
         };
         numberEnum: {
-            "type": string;
-            "enum": number[];
+            type: string;
+            enum: number[];
         };
         namedIntegerEnum: {
-            "type": string;
-            "enum": number[];
-            "tsEnumNames": string[];
+            type: string;
+            enum: number[];
+            tsEnumNames: string[];
         };
         impliedNamedIntegerEnum: {
-            "enum": number[];
-            "tsEnumNames": string[];
+            enum: number[];
+            tsEnumNames: string[];
         };
         impliedHeterogeneousEnum: {
-            "enum": (string | number | boolean | null)[];
+            enum: (string | number | boolean | null)[];
         };
         namedIntegerEnumTitle: {
-            "type": string;
-            "enum": number[];
-            "title": string;
-            "tsEnumNames": string[];
+            type: string;
+            enum: number[];
+            title: string;
+            tsEnumNames: string[];
         };
         impliedNamedIntegerEnumTitle: {
             enum: number[];

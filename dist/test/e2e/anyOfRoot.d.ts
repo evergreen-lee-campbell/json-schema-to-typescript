@@ -1,16 +1,16 @@
 export declare const input: {
-    "title": string;
-    "anyOf": {
-        "$ref": string;
+    title: string;
+    anyOf: {
+        $ref: string;
     }[];
     definitions: {
         foo: {
             properties: {
-                "a": {
-                    "type": string;
+                a: {
+                    type: string;
                 };
-                "b": {
-                    "type": string;
+                b: {
+                    type: string;
                 };
             };
             additionalProperties: boolean;

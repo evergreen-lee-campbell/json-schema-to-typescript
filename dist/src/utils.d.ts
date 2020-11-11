@@ -1,13 +1,7 @@
 import { JSONSchema } from './types/JSONSchema';
 export declare function Try<T>(fn: () => T, err: (e: Error) => any): T;
-/**
- * Depth-first traversal
- */
-export declare function dft<T, U>(object: {
-    [k: string]: any;
-}, cb: (value: U, key: string) => T): void;
 export declare function mapDeep(object: object, fn: (value: object, key?: string) => object, key?: string): object;
-export declare function traverse(schema: JSONSchema, callback: (schema: JSONSchema) => void): void;
+export declare function traverse(schema: JSONSchema, callback: (schema: JSONSchema, isRoot: boolean) => void, isRoot: boolean): void;
 /**
  * Eg. `foo/bar/baz.json` => `baz`
  */
@@ -23,8 +17,11 @@ export declare function stripExtension(filename: string): string;
 export declare function toSafeString(string: string): string;
 export declare function generateName(from: string, usedNames: Set<string>): string;
 export declare function error(...messages: any[]): void;
-export declare function log(...messages: any[]): void;
+declare type LogStyle = 'blue' | 'cyan' | 'green' | 'magenta' | 'red' | 'yellow';
+export declare function log(style: LogStyle, title: string, ...messages: unknown[]): void;
 /**
  * escape block comments in schema descriptions so that they don't unexpectedly close JSDoc comments in generated typescript interfaces
  */
 export declare function escapeBlockComment(schema: JSONSchema): void;
+export declare function pathTransform(outputPath: string, inputPath: string, filePath: string): string;
+export {};

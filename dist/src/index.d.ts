@@ -20,6 +20,14 @@ export interface Options {
      */
     enableConstEnums: boolean;
     /**
+     * Format code? Set this to `false` to improve performance.
+     */
+    format: boolean;
+    /**
+     * Ignore maxItems and minItems for `array` types, preventing tuples being generated.
+     */
+    ignoreMinAndMaxItems: boolean;
+    /**
      * Append all index signatures with `| undefined` so that they are strictly typed.
      *
      * This is required to be compatible with `strictNullChecks`.
@@ -37,6 +45,10 @@ export interface Options {
      * Parse BSON Types for MongoDB validation schema compatibility.
      */
     supportBsonTypes: boolean;
+    /**
+     * Generate unknown type instead of any
+     */
+    unknownAny: boolean;
     /**
      * [$RefParser](https://github.com/BigstickCarpet/json-schema-ref-parser) Options, used when resolving `$ref`s
      */

@@ -5,7 +5,7 @@ export declare const input: {
         '`foo`': {
             type: string;
         };
-        '\'bar\'': {
+        "'bar'": {
             type: string;
         };
         '"baz"': {

@@ -1,5 +1,5 @@
-import { Options } from '../../src/';
-export declare let input: {
+import { Options } from '../../src';
+export declare const input: {
     title: string;
     type: string;
     properties: {
@@ -13,4 +13,4 @@ export declare let input: {
     };
     required: string[];
 };
-export declare let options: Partial<Options>;
+export declare const options: Partial<Options>;

@@ -140,7 +140,7 @@ function processGlob(argIn, argOut, argv) {
                     // careful to do this serially
                     results.forEach(function (_a) {
                         var file = _a[0], result = _a[1];
-                        var outputPath = argOut && argOut + "/" + path_1.basename(file, '.json') + ".d.ts";
+                        var outputPath = argOut && argOut + "/" + path_1.basename(file, argv.supportBsonTypes ? '.bson' : '.json') + ".d.ts";
                         outputResult(result, outputPath);
                     });
                     return [2 /*return*/];
@@ -180,7 +180,7 @@ function processDir(argIn, argOut, argv) {
                     // careful to do this serially
                     results.forEach(function (_a) {
                         var file = _a[0], result = _a[1], outputPath = _a[2];
-                        return outputResult(result, outputPath ? outputPath + "/" + path_1.basename(file, '.json') + ".d.ts" : undefined);
+                        return outputResult(result, outputPath ? outputPath + "/" + path_1.basename(file, argv.supportBsonTypes ? '.bson' : '.json') + ".d.ts" : undefined);
                     });
                     return [2 /*return*/];
             }

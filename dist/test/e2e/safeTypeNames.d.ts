@@ -1,6 +1,6 @@
 export declare const input: {
     definitions: {
-        'stra\'nge#name': {
+        "stra'nge#name": {
             properties: {
                 a: {
                     type: string;

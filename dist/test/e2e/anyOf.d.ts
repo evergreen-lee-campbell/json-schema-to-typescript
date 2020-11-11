@@ -1,9 +1,9 @@
 export declare const input: {
-    "title": string;
-    "type": string;
-    "properties": {
-        "foo": {
-            'type': string;
+    title: string;
+    type: string;
+    properties: {
+        foo: {
+            type: string;
             anyOf: {
                 $ref: string;
             }[];
@@ -12,11 +12,11 @@ export declare const input: {
     definitions: {
         foo: {
             properties: {
-                "a": {
-                    "type": string;
+                a: {
+                    type: string;
                 };
-                "b": {
-                    "type": string;
+                b: {
+                    type: string;
                 };
             };
             additionalProperties: boolean;
@@ -25,7 +25,7 @@ export declare const input: {
         bar: {
             properties: {
                 a: {
-                    "enum": string[];
+                    enum: string[];
                 };
                 bam: {
                     type: string;

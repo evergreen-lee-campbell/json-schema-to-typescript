@@ -22,7 +22,6 @@ export declare const input: {
                 };
             };
         };
-        required: string[];
     };
 };
 export declare const options: {

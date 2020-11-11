@@ -1,10 +1,10 @@
 export declare const input: {
-    "title": string;
-    "description": string;
+    title: string;
+    description: string;
     type: string;
     properties: {
         value: {
-            "type": string[];
+            type: string[];
         };
         anotherValue: {
             type: string[];
