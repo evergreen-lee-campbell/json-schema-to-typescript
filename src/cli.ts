@@ -82,7 +82,7 @@ async function processGlob(argIn: string, argOut: string | undefined, argv: Part
 
   // careful to do this serially
   results.forEach(([file, result]) => {
-    const outputPath = argOut && `${argOut}/${basename(file, '.json')}.d.ts`
+    const outputPath = argOut && `${argOut}/${basename(file, argv.supportBsonTypes ? '.bson' : '.json')}.d.ts`
     outputResult(result, outputPath)
   })
 }
@@ -104,7 +104,7 @@ async function processDir(argIn: string, argOut: string | undefined, argv: Parti
 
   // careful to do this serially
   results.forEach(([file, result, outputPath]) =>
-    outputResult(result, outputPath ? `${outputPath}/${basename(file, '.json')}.d.ts` : undefined)
+    outputResult(result, outputPath ? `${outputPath}/${basename(file, argv.supportBsonTypes ? '.bson' : '.json')}.d.ts` : undefined)
   )
 }
 
